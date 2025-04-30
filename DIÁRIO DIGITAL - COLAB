@@ -1,0 +1,102 @@
+from datetime import datetime
+from IPython.display import clear_output
+import os
+
+ARQUIVO = "diario.txt"
+
+def salvar_anotacao():
+    """Salva uma nova anotação com data e hora."""
+    clear_output()
+    print("📝 Nova Anotação\n")
+    texto = input("Digite sua anotação:\n> ").strip()
+    
+    if texto:
+        data_hora = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        try:
+            with open(ARQUIVO, "a", encoding="utf-8") as f:
+                f.write(f"[{data_hora}] {texto}\n")
+            print("\n✅ Anotação salva com sucesso!")
+        except Exception as e:
+            print(f"❌ Erro ao salvar a anotação: {e}")
+    else:
+        print("⚠️ A anotação está vazia!")
+
+def mostrar_anotacoes(numeradas=False):
+    """Exibe todas as anotações salvas, com ou sem numeração."""
+    clear_output()
+    print("📚 Anotações Salvas\n")
+
+    if not os.path.exists(ARQUIVO):
+        print("📘 O diário ainda está vazio.")
+        return []
+
+    try:
+        with open(ARQUIVO, "r", encoding="utf-8") as f:
+            linhas = [linha.strip() for linha in f if linha.strip()]
+        if not linhas:
+            print("📘 O diário ainda está vazio.")
+            return []
+        
+        print("-" * 40)
+        for idx, linha in enumerate(linhas, 1):
+            print(f"{idx}. {linha}" if numeradas else linha)
+        print("-" * 40)
+        return linhas
+    except Exception as e:
+        print(f"❌ Erro ao ler as anotações: {e}")
+        return []
+
+def excluir_anotacao():
+    """Permite excluir uma anotação específica pelo número."""
+    linhas = mostrar_anotacoes(numeradas=True)
+    if not linhas:
+        return
+
+    try:
+        escolha = input("\nDigite o número da anotação a excluir (ou ENTER para cancelar): ").strip()
+        if not escolha:
+            print("❎ Exclusão cancelada.")
+            return
+
+        idx = int(escolha)
+        if 1 <= idx <= len(linhas):
+            anotacao_removida = linhas.pop(idx - 1)
+            with open(ARQUIVO, "w", encoding="utf-8") as f:
+                for linha in linhas:
+                    f.write(linha + "\n")
+            print(f"🗑️ Anotação removida:\n> {anotacao_removida}")
+        else:
+            print("❌ Número inválido.")
+    except ValueError:
+        print("❌ Entrada inválida. Digite apenas o número da anotação.")
+    except Exception as e:
+        print(f"❌ Erro ao excluir anotação: {e}")
+
+def menu():
+    """Menu principal do diário eletrônico."""
+    while True:
+        print("\n📘 Diário Eletrônico")
+        print("1. ✍️ Escrever nova anotação")
+        print("2. 📖 Ver anotações")
+        print("3. 🗑️ Excluir uma anotação")
+        print("4. 🚪 Sair")
+
+        opcao = input("Escolha uma opção (1/2/3/4): ").strip()
+
+        if opcao == "1":
+            salvar_anotacao()
+        elif opcao == "2":
+            mostrar_anotacoes()
+        elif opcao == "3":
+            excluir_anotacao()
+        elif opcao == "4":
+            print("👋 Até logo!")
+            break
+        else:
+            clear_output()
+            print("❌ Opção inválida. Tente novamente.")
+
+# Executar o menu principal
+if __name__ == "__main__":
+    clear_output()
+    menu()
